@@ -333,16 +333,17 @@ The browser only ever uses the **anon key** (limited, safe, guarded by RLS).
 Build strictly top to bottom. Each phase ends with something you can see working.
 
 ### Phase 0 — Setup
-- [ ] Create Next.js (App Router) project + Tailwind
-- [ ] Create Supabase project
-- [ ] Install Supabase client; put project URL + anon key in `.env.local`
-- [ ] One throwaway query to confirm the connection
-- **Done when:** app runs and reaches the database.
+- [x] Create Next.js (App Router) project + Tailwind
+- [x] Create Supabase project
+- [x] Install Supabase client; put project URL + anon key in `.env.local`
+- [x] One throwaway query to confirm the connection
+- **Done when:** app runs and reaches the database. ✅ Done.
 
 ### Phase 1 — Login + roles
 - [ ] Manually seed the first pathologist in the Supabase dashboard
 - [ ] Create `profiles` table
 - [ ] Build the login page
+- [ ] `middleware.ts` — refreshes the Supabase session on each request (uses `createServerClient` from `@supabase/ssr`)
 - [ ] Route protection (not logged in → login page)
 - [ ] `get_my_role()` helper
 - [ ] Placeholder page printing "logged in as: <role>"
