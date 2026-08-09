@@ -26,7 +26,19 @@ export async function proxy(request: NextRequest) {
   );
 
   // Refreshes the session if the access token is expired.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  if (!user && pathname !== "/login") {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  if (user && pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   return supabaseResponse;
 }
