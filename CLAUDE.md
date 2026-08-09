@@ -349,7 +349,7 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - [x] Manually seed the first pathologist in the Supabase dashboard
 - [x] Create `profiles` table
 - [x] Build the login page
-- [ ] `middleware.ts` — refreshes the Supabase session on each request (uses `createServerClient` from `@supabase/ssr`)
+- [x] `proxy.ts` — refreshes the Supabase session on each request (uses `createServerClient` from `@supabase/ssr`; named `proxy.ts` per Next.js 16's renamed convention, formerly `middleware.ts`)
 - [ ] Route protection (not logged in → login page)
 - [ ] `get_my_role()` helper
 - [ ] Placeholder page printing "logged in as: <role>"
