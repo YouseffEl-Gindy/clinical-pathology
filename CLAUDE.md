@@ -351,7 +351,7 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - [x] Build the login page
 - [x] `proxy.ts` — refreshes the Supabase session on each request (uses `createServerClient` from `@supabase/ssr`; named `proxy.ts` per Next.js 16's renamed convention, formerly `middleware.ts`)
 - [x] Route protection (not logged in → login page)
-- [ ] `get_my_role()` helper
+- [x] `get_my_role()` helper
 - [ ] Placeholder page printing "logged in as: <role>"
 - **Done when:** login works and the app knows who + what role.
 
