@@ -19,6 +19,10 @@ loop well, defer everything non-essential.
 ### Tech stack
 - **Frontend:** Next.js (App Router) + Tailwind CSS
 - **Backend:** Supabase (Postgres + Auth + Row Level Security + Edge Functions later)
+- **Supabase management:** via Supabase MCP server (connected through Claude Code) —
+  use its tools (`apply_migration`, `execute_sql`, `get_advisors`, `list_tables`, etc.)
+  for schema changes, RLS policies, and inspection, instead of manually pasting SQL
+  into the dashboard SQL Editor.
 - **PDF:** `@react-pdf/renderer`
 - **Email:** Resend (test mode during dev, verified client domain at go-live)
 - **Hosting:** Vercel
@@ -283,6 +287,8 @@ a case_status column in sync every time a test changes.
 RLS policies must live in Postgres so rules can't be bypassed through the API.
 
 - Use a `get_my_role()` helper to keep policies clean.
+- Apply RLS changes via the Supabase MCP's `apply_migration` tool, and run
+  `get_advisors` (security) afterward to catch missing/misconfigured policies.
 - Each staff role can only make its own transition:
   - receptionist → writes patients/cases, moves nothing past `ordered`
   - sampler → `ordered → sampled` only
@@ -340,9 +346,9 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - **Done when:** app runs and reaches the database. ✅ Done.
 
 ### Phase 1 — Login + roles
-- [ ] Manually seed the first pathologist in the Supabase dashboard
-- [ ] Create `profiles` table
-- [ ] Build the login page
+- [x] Manually seed the first pathologist in the Supabase dashboard
+- [x] Create `profiles` table
+- [x] Build the login page
 - [ ] `middleware.ts` — refreshes the Supabase session on each request (uses `createServerClient` from `@supabase/ssr`)
 - [ ] Route protection (not logged in → login page)
 - [ ] `get_my_role()` helper
