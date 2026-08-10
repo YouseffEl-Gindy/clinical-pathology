@@ -362,8 +362,17 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - **Done when:** the database enforces the rules by itself. ✅ Done.
 
 ### Phase 3 — Test catalog admin (pathologist)
-- [ ] Screen to add + list tests (name, code, specimen, price, unit)
-- **Done when:** tests can be put in the system (unblocks ordering).
+- [x] Screen to add + list tests (name, code, specimen, price, unit)
+- [x] Edit a test (including active/inactive toggle)
+- [x] Delete a test (blocked with a friendly message if it's already been ordered)
+- **Done when:** tests can be put in the system (unblocks ordering). ✅ Done.
+
+### Phase 3.5 — Staff admin (pathologist)
+- [ ] Screen for pathologist to add a new staff login (name, role, email, temp password)
+- [ ] Server action using `service_role` key (`auth.admin.createUser` + insert `profiles` row)
+- [ ] List existing staff
+- **Done when:** pathologist can create receptionist/sampler/chemist logins from the UI
+      (unblocks testing Phases 4-6 with real accounts instead of manually seeded ones).
 
 ### Phase 4 — Receptionist flow (the spine)
 - [ ] Create a patient
@@ -385,7 +394,6 @@ Build strictly top to bottom. Each phase ends with something you can see working
 ### Phase 7 — Pathologist approval + dashboard
 - [ ] List `processed` tests and approve them
 - [ ] Dashboard (compute open / in_progress / awaiting_approval from test statuses)
-- [ ] Add-staff screen (server action + service_role key)
 - **Done when:** the whole pipeline works end to end — walk-in to approved. **Big milestone.**
 
 ### Phase 8 — PDF report
