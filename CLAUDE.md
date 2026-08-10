@@ -356,10 +356,10 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - **Done when:** login works and the app knows who + what role. ✅ Done.
 
 ### Phase 2 — Schema + RLS
-- [ ] Create `patients`, `cases`, `test_catalog`, `test_orders`
-- [ ] Write RLS policies per role
-- [ ] Test policies in SQL (e.g. receptionist cannot approve)
-- **Done when:** the database enforces the rules by itself.
+- [x] Create `patients`, `cases`, `test_catalog`, `test_orders`
+- [x] Write RLS policies per role
+- [x] Test policies in SQL (e.g. receptionist cannot approve)
+- **Done when:** the database enforces the rules by itself. ✅ Done.
 
 ### Phase 3 — Test catalog admin (pathologist)
 - [ ] Screen to add + list tests (name, code, specimen, price, unit)
