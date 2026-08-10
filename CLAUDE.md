@@ -353,6 +353,7 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - [x] Route protection (not logged in → login page)
 - [x] `get_my_role()` helper
 - [x] Placeholder page printing "logged in as: <role>"
+- [x] Sign out button (server action, clears session, redirects to `/login`)
 - **Done when:** login works and the app knows who + what role. ✅ Done.
 
 ### Phase 2 — Schema + RLS
@@ -368,11 +369,12 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - **Done when:** tests can be put in the system (unblocks ordering). ✅ Done.
 
 ### Phase 3.5 — Staff admin (pathologist)
-- [ ] Screen for pathologist to add a new staff login (name, role, email, temp password)
-- [ ] Server action using `service_role` key (`auth.admin.createUser` + insert `profiles` row)
-- [ ] List existing staff
+- [x] Screen for pathologist to add a new staff login (name, role, email, password)
+- [x] Server action using the Supabase secret key (`auth.admin.createUser` + insert `profiles` row)
+- [x] List existing staff
+- [x] Pathologist home page nav buttons to Test Catalog and Staff
 - **Done when:** pathologist can create receptionist/sampler/chemist logins from the UI
-      (unblocks testing Phases 4-6 with real accounts instead of manually seeded ones).
+      (unblocks testing Phases 4-6 with real accounts instead of manually seeded ones). ✅ Done.
 
 ### Phase 4 — Receptionist flow (the spine)
 - [ ] Create a patient
