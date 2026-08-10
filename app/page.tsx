@@ -1,5 +1,6 @@
 import { createClient } from "@/app/_lib/supabase/server";
 import { getMyRole } from "@/app/_lib/data/profiles";
+import { logout } from "@/app/_lib/actions/auth";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -20,6 +21,30 @@ export default async function Home() {
             No profile found for this account.
           </p>
         )}
+        {role === "pathologist" && (
+          <div className="flex gap-3">
+            <a
+              href="/pathologist/catalog"
+              className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
+            >
+              Test Catalog
+            </a>
+            <a
+              href="/pathologist/staff"
+              className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
+            >
+              Staff
+            </a>
+          </div>
+        )}
+        <form action={logout}>
+          <button
+            type="submit"
+            className="rounded bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          >
+            Sign out
+          </button>
+        </form>
       </main>
     </div>
   );
