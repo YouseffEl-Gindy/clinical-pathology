@@ -18,17 +18,28 @@ export default async function CaseDetailPage({
   const caseRecord = await getCaseById(supabase, id);
   const patient = await getPatientById(supabase, caseRecord.patient_id);
   const testOrders = await getTestOrdersForCase(supabase, id);
+  const isEditable = testOrders.every((order) => order.status === "ordered");
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">
-      <div>
-        <h1 className="text-xl font-semibold">Case</h1>
-        <Link
-          href={`/receptionist/patients/${patient.id}`}
-          className="text-sm text-gray-500 hover:underline"
-        >
-          {patient.first_name} {patient.last_name} ({patient.phone})
-        </Link>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Case</h1>
+          <Link
+            href={`/receptionist/patients/${patient.id}`}
+            className="text-sm text-gray-500 hover:underline"
+          >
+            {patient.first_name} {patient.last_name} ({patient.phone})
+          </Link>
+        </div>
+        {isEditable && (
+          <Link
+            href={`/receptionist/cases/${id}/edit`}
+            className="text-sm text-gray-500 hover:underline"
+          >
+            Edit
+          </Link>
+        )}
       </div>
 
       {error && (

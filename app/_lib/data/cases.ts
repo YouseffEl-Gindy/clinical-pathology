@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Tables, TablesInsert } from "@/app/_lib/types/database.types";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/app/_lib/types/database.types";
 
 export async function createCase(
   supabase: SupabaseClient,
@@ -19,6 +23,21 @@ export async function getCaseById(supabase: SupabaseClient, id: string) {
     .from("cases")
     .select("*")
     .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data as Tables<"cases">;
+}
+
+export async function updateCase(
+  supabase: SupabaseClient,
+  id: string,
+  updates: TablesUpdate<"cases">
+) {
+  const { data, error } = await supabase
+    .from("cases")
+    .update(updates)
+    .eq("id", id)
+    .select()
     .single();
   if (error) throw error;
   return data as Tables<"cases">;

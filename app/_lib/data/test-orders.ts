@@ -13,6 +13,11 @@ export async function createTestOrders(
   return data;
 }
 
+export async function deleteTestOrders(supabase: SupabaseClient, ids: string[]) {
+  const { error } = await supabase.from("test_orders").delete().in("id", ids);
+  if (error) throw error;
+}
+
 export async function getTestOrdersForCase(
   supabase: SupabaseClient,
   caseId: string

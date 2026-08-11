@@ -4,9 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getMyRole, getMyProfile } from "@/app/_lib/data/profiles";
-import { createCase } from "@/app/_lib/data/cases";
+import { createCase, updateCase } from "@/app/_lib/data/cases";
 import { getTestsByIds } from "@/app/_lib/data/test-catalog";
-import { createTestOrders } from "@/app/_lib/data/test-orders";
+import {
+  createTestOrders,
+  deleteTestOrders,
+  getTestOrdersForCase,
+} from "@/app/_lib/data/test-orders";
 
 export async function addCase(formData: FormData) {
   const supabase = await createClient();
@@ -103,4 +107,103 @@ export async function addCase(formData: FormData) {
 
   revalidatePath("/receptionist/cases/new");
   redirect(`/receptionist/cases/${caseRecord.id}`);
+}
+
+export async function editCase(formData: FormData) {
+  const supabase = await createClient();
+  const role = await getMyRole(supabase);
+
+  const id = formData.get("id") as string;
+
+  if (role !== "receptionist" && role !== "pathologist") {
+    redirect(`/receptionist/cases/${id}/edit?error=Not authorized`);
+  }
+
+  const currentOrders = await getTestOrdersForCase(supabase, id);
+  if (currentOrders.some((order) => order.status !== "ordered")) {
+    redirect(
+      `/receptionist/cases/${id}?error=` +
+        encodeURIComponent(
+          "This case can no longer be edited because testing has started"
+        )
+    );
+  }
+
+  const is_pregnant = formData.get("is_pregnant") === "on";
+  const smoker = formData.get("smoker") === "on";
+  const athletic = formData.get("athletic") === "on";
+  const alcoholic = formData.get("alcoholic") === "on";
+  const has_diet_plan = formData.get("has_diet_plan") === "on";
+  const has_prior_contract = formData.get("has_prior_contract") === "on";
+
+  const came_from = (formData.get("came_from") as string)?.trim() || null;
+  const fasting_since =
+    (formData.get("fasting_since") as string)?.trim() || null;
+  const drugs_used = (formData.get("drugs_used") as string)?.trim() || null;
+  const doctor_advice =
+    (formData.get("doctor_advice") as string)?.trim() || null;
+  const referring_doctor =
+    (formData.get("referring_doctor") as string)?.trim() || null;
+
+  const payment_status = (formData.get("payment_status") as string) || null;
+  const payment_method = (formData.get("payment_method") as string) || null;
+
+  const selectedTestIds = formData.getAll("test_ids") as string[];
+  if (selectedTestIds.length === 0) {
+    redirect(
+      `/receptionist/cases/${id}/edit?error=` +
+        encodeURIComponent("Select at least one test")
+    );
+  }
+
+  try {
+    await updateCase(supabase, id, {
+      is_pregnant,
+      smoker,
+      athletic,
+      alcoholic,
+      has_diet_plan,
+      has_prior_contract,
+      came_from,
+      fasting_since,
+      drugs_used,
+      doctor_advice,
+      referring_doctor,
+      payment_status,
+      payment_method,
+    });
+
+    const currentTestIds = currentOrders.map((order) => order.test_id);
+    const testIdsToAdd = selectedTestIds.filter(
+      (testId) => !currentTestIds.includes(testId)
+    );
+    const orderIdsToRemove = currentOrders
+      .filter((order) => !selectedTestIds.includes(order.test_id))
+      .map((order) => order.id);
+
+    if (testIdsToAdd.length > 0) {
+      const tests = await getTestsByIds(supabase, testIdsToAdd);
+      await createTestOrders(
+        supabase,
+        tests.map((test) => ({
+          case_id: id,
+          test_id: test.id,
+          status: "ordered",
+          price_snapshot: test.price,
+        }))
+      );
+    }
+
+    if (orderIdsToRemove.length > 0) {
+      await deleteTestOrders(supabase, orderIdsToRemove);
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to update case";
+    redirect(
+      `/receptionist/cases/${id}/edit?error=` + encodeURIComponent(message)
+    );
+  }
+
+  revalidatePath(`/receptionist/cases/${id}`);
+  redirect(`/receptionist/cases/${id}`);
 }
