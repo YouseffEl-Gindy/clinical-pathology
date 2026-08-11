@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getPatientById } from "@/app/_lib/data/patients";
+import { DeletePatientButton } from "@/app/_components/receptionist/DeletePatientButton";
 
 export default async function PatientDetailPage({
   params,
@@ -10,9 +12,20 @@ export default async function PatientDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">
-      <h1 className="text-xl font-semibold">
-        {patient.first_name} {patient.last_name}
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">
+          {patient.first_name} {patient.last_name}
+        </h1>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/receptionist/patients/${patient.id}/edit`}
+            className="text-sm text-gray-500 hover:underline"
+          >
+            Edit
+          </Link>
+          <DeletePatientButton id={patient.id} />
+        </div>
+      </div>
 
       <dl className="grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-6 shadow-sm text-sm">
         <div>
