@@ -5,11 +5,29 @@ import type {
   TablesUpdate,
 } from "@/app/_lib/types/database.types";
 
-export async function getTestCatalog(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+export async function getTestCatalog(
+  supabase: SupabaseClient,
+  opts?: { activeOnly?: boolean }
+) {
+  let query = supabase
     .from("test_catalog")
     .select("*")
     .order("name", { ascending: true });
+
+  if (opts?.activeOnly) {
+    query = query.eq("active", true);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as Tables<"test_catalog">[];
+}
+
+export async function getTestsByIds(supabase: SupabaseClient, ids: string[]) {
+  const { data, error } = await supabase
+    .from("test_catalog")
+    .select("*")
+    .in("id", ids);
   if (error) throw error;
   return data as Tables<"test_catalog">[];
 }

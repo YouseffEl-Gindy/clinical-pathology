@@ -1,0 +1,127 @@
+import Link from "next/link";
+import { createClient } from "@/app/_lib/supabase/server";
+import { getCaseById } from "@/app/_lib/data/cases";
+import { getPatientById } from "@/app/_lib/data/patients";
+import { getTestOrdersForCase } from "@/app/_lib/data/test-orders";
+
+function yesNo(value: boolean | null) {
+  return value ? "Yes" : "No";
+}
+
+export default async function CaseDetailPage({
+  params,
+  searchParams,
+}: PageProps<"/receptionist/cases/[id]">) {
+  const { id } = await params;
+  const { error } = await searchParams;
+  const supabase = await createClient();
+  const caseRecord = await getCaseById(supabase, id);
+  const patient = await getPatientById(supabase, caseRecord.patient_id);
+  const testOrders = await getTestOrdersForCase(supabase, id);
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-8 p-6">
+      <div>
+        <h1 className="text-xl font-semibold">Case</h1>
+        <Link
+          href={`/receptionist/patients/${patient.id}`}
+          className="text-sm text-gray-500 hover:underline"
+        >
+          {patient.first_name} {patient.last_name} ({patient.phone})
+        </Link>
+      </div>
+
+      {error && (
+        <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
+      <dl className="grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-6 shadow-sm text-sm">
+        <div>
+          <dt className="text-gray-500">Where do you come from</dt>
+          <dd>{caseRecord.came_from ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Last time you ate</dt>
+          <dd>{caseRecord.fasting_since ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Drugs used</dt>
+          <dd>{caseRecord.drugs_used ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Referring doctor</dt>
+          <dd>{caseRecord.referring_doctor ?? "—"}</dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-gray-500">Doctor advice</dt>
+          <dd>{caseRecord.doctor_advice ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Payment status</dt>
+          <dd>{caseRecord.payment_status ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Payment method</dt>
+          <dd>{caseRecord.payment_method ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Pregnant</dt>
+          <dd>{yesNo(caseRecord.is_pregnant)}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Smoker</dt>
+          <dd>{yesNo(caseRecord.smoker)}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Athletic</dt>
+          <dd>{yesNo(caseRecord.athletic)}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Alcoholic</dt>
+          <dd>{yesNo(caseRecord.alcoholic)}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Has diet plan</dt>
+          <dd>{yesNo(caseRecord.has_diet_plan)}</dd>
+        </div>
+        <div>
+          <dt className="text-gray-500">Has prior contract</dt>
+          <dd>{yesNo(caseRecord.has_prior_contract)}</dd>
+        </div>
+      </dl>
+
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium">Ordered tests</h2>
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 text-left text-gray-500">
+              <th className="py-2">Test</th>
+              <th>Code</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {testOrders.map((order) => (
+              <tr key={order.id} className="border-b border-gray-100">
+                <td className="py-2">{order.test_catalog?.name ?? "—"}</td>
+                <td>{order.test_catalog?.code ?? "—"}</td>
+                <td>{order.price_snapshot ?? "—"}</td>
+                <td>{order.status}</td>
+              </tr>
+            ))}
+            {testOrders.length === 0 && (
+              <tr>
+                <td colSpan={4} className="py-4 text-center text-gray-500">
+                  No tests ordered.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
