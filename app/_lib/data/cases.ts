@@ -23,3 +23,44 @@ export async function getCaseById(supabase: SupabaseClient, id: string) {
   if (error) throw error;
   return data as Tables<"cases">;
 }
+
+export async function getCasesForPatient(
+  supabase: SupabaseClient,
+  patientId: string
+) {
+  const { data, error } = await supabase
+    .from("cases")
+    .select("*")
+    .eq("patient_id", patientId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data as Tables<"cases">[];
+}
+
+const PAGE_SIZE = 20;
+
+export async function getCases(
+  supabase: SupabaseClient,
+  { phone, page = 1 }: { phone?: string; page?: number } = {}
+) {
+  let query = supabase
+    .from("cases")
+    .select("*, patients!inner(first_name, last_name, phone)", {
+      count: "exact",
+    })
+    .order("created_at", { ascending: false });
+
+  if (phone) {
+    query = query.ilike("patients.phone", `%${phone}%`);
+  }
+
+  const from = (page - 1) * PAGE_SIZE;
+  const { data, error, count } = await query.range(from, from + PAGE_SIZE - 1);
+  if (error) throw error;
+
+  return {
+    cases: data,
+    count: count ?? 0,
+    pageSize: PAGE_SIZE,
+  };
+}
