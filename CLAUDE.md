@@ -379,8 +379,16 @@ Build strictly top to bottom. Each phase ends with something you can see working
 ### Phase 4 — Receptionist flow (the spine)
 - [x] Create a patient
 - [x] Search patients by phone
+- [x] Edit a patient
+- [x] Delete a patient (blocked with a friendly message if they have existing cases)
+- [x] Enforce unique patient phone numbers (DB constraint + friendly error on conflict)
 - [x] Create a case with the questionnaire
-- [x] Order tests from the catalog
+- [x] Order tests from the catalog (folded into case creation — at least one test required)
+- [x] List all cases, paginated, with a patient-phone filter
+- [x] Show a patient's case history on their detail page
+- [x] Edit a case (questionnaire + which tests are ordered) — only while every test on the
+      case is still `ordered`; locked once sampling starts
+- [x] Delete a case — same "still `ordered`" guard as edit, enforced via RLS
 - **Done when:** a complete case sits in the system, ready to move. ✅ Done.
 
 ### Phase 5 — Sampler

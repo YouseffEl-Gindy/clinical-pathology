@@ -3,6 +3,7 @@ import { createClient } from "@/app/_lib/supabase/server";
 import { getCaseById } from "@/app/_lib/data/cases";
 import { getPatientById } from "@/app/_lib/data/patients";
 import { getTestOrdersForCase } from "@/app/_lib/data/test-orders";
+import { DeleteCaseButton } from "@/app/_components/receptionist/DeleteCaseButton";
 
 function yesNo(value: boolean | null) {
   return value ? "Yes" : "No";
@@ -33,12 +34,15 @@ export default async function CaseDetailPage({
           </Link>
         </div>
         {isEditable && (
-          <Link
-            href={`/receptionist/cases/${id}/edit`}
-            className="text-sm text-gray-500 hover:underline"
-          >
-            Edit
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href={`/receptionist/cases/${id}/edit`}
+              className="text-sm text-gray-500 hover:underline"
+            >
+              Edit
+            </Link>
+            <DeleteCaseButton id={id} />
+          </div>
         )}
       </div>
 

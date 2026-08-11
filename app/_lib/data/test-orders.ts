@@ -18,6 +18,18 @@ export async function deleteTestOrders(supabase: SupabaseClient, ids: string[]) 
   if (error) throw error;
 }
 
+export async function getTestOrderStatusesForCases(
+  supabase: SupabaseClient,
+  caseIds: string[]
+) {
+  const { data, error } = await supabase
+    .from("test_orders")
+    .select("case_id, status")
+    .in("case_id", caseIds);
+  if (error) throw error;
+  return data;
+}
+
 export async function getTestOrdersForCase(
   supabase: SupabaseClient,
   caseId: string

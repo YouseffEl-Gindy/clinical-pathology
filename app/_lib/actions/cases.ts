@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getMyRole, getMyProfile } from "@/app/_lib/data/profiles";
-import { createCase, updateCase } from "@/app/_lib/data/cases";
+import { createCase, updateCase, deleteCase } from "@/app/_lib/data/cases";
 import { getTestsByIds } from "@/app/_lib/data/test-catalog";
 import {
   createTestOrders,
@@ -206,4 +206,41 @@ export async function editCase(formData: FormData) {
 
   revalidatePath(`/receptionist/cases/${id}`);
   redirect(`/receptionist/cases/${id}`);
+}
+
+export async function deleteCaseAction(formData: FormData) {
+  const supabase = await createClient();
+  const role = await getMyRole(supabase);
+
+  const id = formData.get("id") as string;
+
+  if (role !== "receptionist" && role !== "pathologist") {
+    redirect(`/receptionist/cases/${id}?error=Not authorized`);
+  }
+
+  const currentOrders = await getTestOrdersForCase(supabase, id);
+  if (currentOrders.some((order) => order.status !== "ordered")) {
+    redirect(
+      `/receptionist/cases/${id}?error=` +
+        encodeURIComponent(
+          "This case can no longer be deleted because testing has started"
+        )
+    );
+  }
+
+  try {
+    if (currentOrders.length > 0) {
+      await deleteTestOrders(
+        supabase,
+        currentOrders.map((order) => order.id)
+      );
+    }
+    await deleteCase(supabase, id);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete case";
+    redirect(`/receptionist/cases/${id}?error=` + encodeURIComponent(message));
+  }
+
+  revalidatePath("/receptionist/cases");
+  redirect("/receptionist/cases");
 }

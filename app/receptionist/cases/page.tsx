@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getCases } from "@/app/_lib/data/cases";
+import { getTestOrderStatusesForCases } from "@/app/_lib/data/test-orders";
+import { DeleteCaseButton } from "@/app/_components/receptionist/DeleteCaseButton";
 
 export default async function CasesListPage({
   searchParams,
@@ -13,6 +15,23 @@ export default async function CasesListPage({
   const supabase = await createClient();
   const { cases, count, pageSize } = await getCases(supabase, { phone, page });
   const totalPages = Math.max(1, Math.ceil(count / pageSize));
+
+  const orderStatuses =
+    cases.length > 0
+      ? await getTestOrderStatusesForCases(
+          supabase,
+          cases.map((c) => c.id)
+        )
+      : [];
+  const editableCaseIds = new Set(
+    cases
+      .filter((c) =>
+        orderStatuses
+          .filter((o) => o.case_id === c.id)
+          .every((o) => o.status === "ordered")
+      )
+      .map((c) => c.id)
+  );
 
   const hrefForPage = (p: number) =>
     `/receptionist/cases?${new URLSearchParams({
@@ -55,6 +74,7 @@ export default async function CasesListPage({
             <th>Phone</th>
             <th>Created</th>
             <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -78,11 +98,12 @@ export default async function CasesListPage({
                   View
                 </Link>
               </td>
+              <td>{editableCaseIds.has(c.id) && <DeleteCaseButton id={c.id} />}</td>
             </tr>
           ))}
           {cases.length === 0 && (
             <tr>
-              <td colSpan={4} className="py-4 text-center text-gray-500">
+              <td colSpan={5} className="py-4 text-center text-gray-500">
                 {phone ? `No cases found for "${phone}".` : "No cases yet."}
               </td>
             </tr>
