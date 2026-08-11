@@ -57,7 +57,11 @@ export async function addPatient(formData: FormData) {
       created_by: profile.id,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to register patient";
+    const pgError = err as { code?: string; message?: string };
+    const message =
+      pgError.code === "23505"
+        ? "A patient with this phone number already exists."
+        : pgError.message ?? "Failed to register patient";
     redirect("/receptionist/patients/new?error=" + encodeURIComponent(message));
   }
 
@@ -110,7 +114,11 @@ export async function editPatient(formData: FormData) {
       referral_source,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to update patient";
+    const pgError = err as { code?: string; message?: string };
+    const message =
+      pgError.code === "23505"
+        ? "A patient with this phone number already exists."
+        : pgError.message ?? "Failed to update patient";
     redirect(`/receptionist/patients/${id}/edit?error=` + encodeURIComponent(message));
   }
 
