@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Tables, TablesInsert } from "@/app/_lib/types/database.types";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/app/_lib/types/database.types";
 
 export async function createPatient(
   supabase: SupabaseClient,
@@ -22,6 +26,26 @@ export async function getPatientById(supabase: SupabaseClient, id: string) {
     .single();
   if (error) throw error;
   return data as Tables<"patients">;
+}
+
+export async function updatePatient(
+  supabase: SupabaseClient,
+  id: string,
+  updates: TablesUpdate<"patients">
+) {
+  const { data, error } = await supabase
+    .from("patients")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Tables<"patients">;
+}
+
+export async function deletePatient(supabase: SupabaseClient, id: string) {
+  const { error } = await supabase.from("patients").delete().eq("id", id);
+  if (error) throw error;
 }
 
 const PAGE_SIZE = 20;

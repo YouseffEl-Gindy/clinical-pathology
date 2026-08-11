@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getPatients } from "@/app/_lib/data/patients";
+import { DeletePatientButton } from "@/app/_components/receptionist/DeletePatientButton";
 
 export default async function PatientsSearchPage({
   searchParams,
 }: PageProps<"/receptionist/patients">) {
-  const { phone: rawPhone, page: rawPage } = await searchParams;
+  const { phone: rawPhone, page: rawPage, error } = await searchParams;
   const phone = Array.isArray(rawPhone) ? rawPhone[0] : rawPhone;
   const pageParam = Array.isArray(rawPage) ? rawPage[0] : rawPage;
   const page = Math.max(1, Number(pageParam) || 1);
@@ -35,6 +36,12 @@ export default async function PatientsSearchPage({
         </Link>
       </div>
 
+      {error && (
+        <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
       <form className="flex gap-2 rounded-lg border border-gray-200 p-6 shadow-sm">
         <input
           name="phone"
@@ -59,6 +66,7 @@ export default async function PatientsSearchPage({
             <th>DOB</th>
             <th>Gender</th>
             <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -78,11 +86,14 @@ export default async function PatientsSearchPage({
                   View
                 </Link>
               </td>
+              <td>
+                <DeletePatientButton id={p.id} />
+              </td>
             </tr>
           ))}
           {patients.length === 0 && (
             <tr>
-              <td colSpan={5} className="py-4 text-center text-gray-500">
+              <td colSpan={6} className="py-4 text-center text-gray-500">
                 {phone
                   ? `No patients found for "${phone}".`
                   : "No patients yet."}
