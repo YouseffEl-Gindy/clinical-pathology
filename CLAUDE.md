@@ -377,11 +377,11 @@ Build strictly top to bottom. Each phase ends with something you can see working
       (unblocks testing Phases 4-6 with real accounts instead of manually seeded ones). ✅ Done.
 
 ### Phase 4 — Receptionist flow (the spine)
-- [ ] Create a patient
-- [ ] Search patients by phone
-- [ ] Create a case with the questionnaire
-- [ ] Order tests from the catalog
-- **Done when:** a complete case sits in the system, ready to move.
+- [x] Create a patient
+- [x] Search patients by phone
+- [x] Create a case with the questionnaire
+- [x] Order tests from the catalog
+- **Done when:** a complete case sits in the system, ready to move. ✅ Done.
 
 ### Phase 5 — Sampler
 - [ ] List tests waiting to be sampled
