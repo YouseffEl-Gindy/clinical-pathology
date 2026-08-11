@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getPatientById } from "@/app/_lib/data/patients";
+import { getCasesForPatient } from "@/app/_lib/data/cases";
 import { DeletePatientButton } from "@/app/_components/receptionist/DeletePatientButton";
 
 export default async function PatientDetailPage({
@@ -9,6 +10,7 @@ export default async function PatientDetailPage({
   const { id } = await params;
   const supabase = await createClient();
   const patient = await getPatientById(supabase, id);
+  const cases = await getCasesForPatient(supabase, id);
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">
@@ -57,6 +59,36 @@ export default async function PatientDetailPage({
           <dd>{patient.referral_source ?? "—"}</dd>
         </div>
       </dl>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium">Cases</h2>
+          <Link
+            href={`/receptionist/cases/new?patientId=${patient.id}`}
+            className="text-sm text-gray-500 hover:underline"
+          >
+            + New case
+          </Link>
+        </div>
+
+        <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 text-sm">
+          {cases.map((c) => (
+            <li key={c.id} className="px-4 py-2">
+              <Link
+                href={`/receptionist/cases/${c.id}`}
+                className="hover:underline"
+              >
+                {new Date(c.created_at).toLocaleDateString()}
+              </Link>
+            </li>
+          ))}
+          {cases.length === 0 && (
+            <li className="px-4 py-4 text-center text-gray-500">
+              No cases yet.
+            </li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
