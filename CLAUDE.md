@@ -392,9 +392,12 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - **Done when:** a complete case sits in the system, ready to move. ✅ Done.
 
 ### Phase 5 — Sampler
-- [ ] List tests waiting to be sampled
-- [ ] Mark a test `sampled`
-- **Done when:** tests advance to the second stage.
+- [x] List tests waiting to be sampled, grouped by case/patient (`/sampler`)
+- [x] Mark a test `sampled`
+- [x] Case status badge (`ordered` / `sampling` / `sampled`); fully-sampled cases stay
+      listed for 3 minutes, then drop off on next refresh (manual/action-triggered, no
+      auto-polling)
+- **Done when:** tests advance to the second stage. ✅ Done.
 
 ### Phase 6 — Chemist
 - [ ] List `sampled` tests
