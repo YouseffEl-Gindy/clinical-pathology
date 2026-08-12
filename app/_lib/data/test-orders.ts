@@ -42,3 +42,32 @@ export async function getTestOrdersForCase(
   if (error) throw error;
   return data;
 }
+
+export async function getSamplerBoardTestOrders(supabase: SupabaseClient) {
+  const { data, error } = await supabase
+    .from("test_orders")
+    .select(
+      "*, test_catalog(name, code, specimen_type), cases(id, patient_id, created_at, patients(first_name, last_name, phone))"
+    )
+    .in("status", ["ordered", "sampled"])
+    .order("created_at", { ascending: true, referencedTable: "cases" })
+    .order("name", { ascending: true, referencedTable: "test_catalog" });
+  if (error) throw error;
+  return data;
+}
+
+export async function markTestOrderSampled(
+  supabase: SupabaseClient,
+  id: string,
+  sampledBy: string
+) {
+  const { error } = await supabase
+    .from("test_orders")
+    .update({
+      status: "sampled",
+      sampled_by: sampledBy,
+      sampled_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
