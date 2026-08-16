@@ -1,5 +1,5 @@
 import { createClient } from "@/app/_lib/supabase/server";
-import { getSamplerBoardTestOrders } from "@/app/_lib/data/test-orders";
+import { getSamplerBoardCases } from "@/app/_lib/data/cases";
 import { MarkSampledButton } from "@/app/_components/sampler/MarkSampledButton";
 
 const SAMPLED_CASE_VISIBLE_MS = 3 * 60 * 1000;
@@ -12,32 +12,26 @@ const CASE_BADGE_STYLES: Record<string, string> = {
 
 export default async function SamplerPage() {
   const supabase = await createClient();
-  const orders = await getSamplerBoardTestOrders(supabase);
-
-  const groups = new Map<string, (typeof orders)[number][]>();
-  for (const order of orders) {
-    const caseId = order.cases.id;
-    const group = groups.get(caseId);
-    if (group) {
-      group.push(order);
-    } else {
-      groups.set(caseId, [order]);
-    }
-  }
+  const cases = await getSamplerBoardCases(supabase);
 
   const now = Date.now();
-  const caseGroups = Array.from(groups.values())
-    .map((tests) => {
+  const caseGroups = cases
+    .map((c) => {
+      const tests = c.test_orders;
       const allSampled = tests.every((t) => t.status === "sampled");
       const noneSampled = tests.every((t) => t.status === "ordered");
-      const label = noneSampled ? "ordered" : allSampled ? "sampled" : "sampling";
+      const label = noneSampled
+        ? "ordered"
+        : allSampled
+          ? "sampled"
+          : "sampling";
       const lastSampledAt = allSampled
         ? tests.reduce<string | null>((latest, t) => {
             if (!t.sampled_at) return latest;
             return !latest || t.sampled_at > latest ? t.sampled_at : latest;
           }, null)
         : null;
-      return { tests, label, lastSampledAt };
+      return { case: c, tests, label, lastSampledAt };
     })
     .filter(({ label, lastSampledAt }) => {
       if (label !== "sampled" || !lastSampledAt) return true;
@@ -55,12 +49,11 @@ export default async function SamplerPage() {
       )}
 
       <div className="space-y-6">
-        {caseGroups.map(({ tests, label }) => {
-          const { cases } = tests[0];
-          const patient = cases.patients;
+        {caseGroups.map(({ case: c, tests, label }) => {
+          const patient = c.patients;
           return (
             <div
-              key={cases.id}
+              key={c.id}
               className="rounded-lg border border-gray-200 p-6 shadow-sm"
             >
               <div className="mb-4 flex items-center justify-between">
@@ -93,7 +86,10 @@ export default async function SamplerPage() {
                       <td>{order.test_catalog.code}</td>
                       <td>{order.test_catalog.specimen_type}</td>
                       <td className="text-right">
-                        <MarkSampledButton id={order.id} status={order.status} />
+                        <MarkSampledButton
+                          id={order.id}
+                          status={order.status}
+                        />
                       </td>
                     </tr>
                   ))}

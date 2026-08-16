@@ -400,9 +400,10 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - **Done when:** tests advance to the second stage. ✅ Done.
 
 ### Phase 6 — Chemist
-- [ ] List `sampled` tests
-- [ ] Enter a result → `processed`
-- **Done when:** results enter the system.
+- [x] List `sampled` tests, by case and by test catalog (`/chemist`)
+- [x] Enter a result → `processed`
+- [x] History of `processed` tests, by case and by test catalog (`/chemist/history`)
+- **Done when:** results enter the system. ✅ Done.
 
 ### Phase 7 — Pathologist approval + dashboard
 - [ ] List `processed` tests and approve them
@@ -436,3 +437,52 @@ Build strictly top to bottom. Each phase ends with something you can see working
 - Phase 7 is the "it works!" moment. If lost mid-build, the goal is simply: get one test to
   `approved`.
 - Keep secrets server-side. Two worlds: browser = visible to users, server = safe for secrets.
+
+## 13. Known issues / planned refactors
+
+### "By case" board ordering — root cause found, structural fix proposed (not yet applied)
+
+The sampler board, chemist board, and chemist history all query the **child** table
+(`test_orders`) and embed `cases` as a side attachment, then group into cards by case in JS.
+This was done so one flat fetch could serve two different groupings (by case, by test).
+
+The bug chased across several rounds: `.order(column, { referencedTable: "cases" })` only
+reorders the top-level rows if the embed is `cases!inner(...)` (a left join makes that order
+clause a silent no-op — PostgREST/supabase-js quirk). Once switched to `!inner` plus explicit
+tiebreakers (`cases.id`, `test_catalog.id`), the "by case" ordering became provably
+deterministic — confirmed via `execute_sql` that no two cases share a `created_at` timestamp.
+The "by test" view had a *second*, different cause (card order followed first-appearance in a
+case-sorted list, not an explicit test ordering) — fixed separately by explicitly sorting test
+groups by `test_catalog.name` client-side in `TestView`.
+
+If shuffling is still observed on a "by case" view after all of the above, the likely
+structural fix (proposed, not yet implemented — pending user testing/confirmation) is:
+
+**Query `cases` as the root table with `test_orders` nested inside**, instead of the reverse:
+
+```
+supabase
+  .from("cases")
+  .select(
+    "id, created_at, patients(first_name, last_name, phone), test_orders!inner(id, test_id, status, result_value, result_unit, test_catalog(name, code, specimen_type, unit))"
+  )
+  .eq("test_orders.status", "sampled")   // dot-notation filter on the nested embed, valid
+                                          // PostgREST syntax when combined with !inner
+  .order("created_at", { ascending: true })
+  .order("id", { ascending: true })
+  .order("created_at", { ascending: true, referencedTable: "test_orders" });
+```
+
+This removes the "order an embedded table" fragility entirely for the "by case" views: the
+top-level rows *are* the cases already grouped with their test_orders nested, ordered by their
+own column — no referencedTable/`!inner` trickery needed for the parent order, and no JS
+grouping-by-case step needed at all. `referencedTable` ordering of the nested `test_orders`
+array is exactly the case it's designed for (ordering a true one-to-many child array), unlike
+the previous usage where it tried to order parent rows by a child's column.
+
+Would apply to: `getSamplerBoardTestOrders`, `getChemistBoardTestOrders`,
+`getChemistHistoryTestOrders` in `app/_lib/data/test-orders.ts`, plus the corresponding
+`CaseView` rendering in `app/sampler/page.tsx`, `app/chemist/page.tsx`,
+`app/chemist/history/page.tsx` (would simplify — no more manual `Map`-based grouping there).
+The "by test" view would keep the current flat-list-from-`test_orders` approach, since
+`test_catalog` would need its own separate root query anyway.
