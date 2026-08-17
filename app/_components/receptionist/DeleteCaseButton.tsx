@@ -1,21 +1,12 @@
-"use client";
-
 import { deleteCaseAction } from "@/app/_lib/actions/cases";
+import { ConfirmDeleteForm } from "@/app/_components/ui/ConfirmDeleteForm";
 
 export function DeleteCaseButton({ id }: { id: string }) {
   return (
-    <form
+    <ConfirmDeleteForm
+      id={id}
       action={deleteCaseAction}
-      onSubmit={(e) => {
-        if (!confirm("Delete this case? This cannot be undone.")) {
-          e.preventDefault();
-        }
-      }}
-    >
-      <input type="hidden" name="id" value={id} />
-      <button type="submit" className="text-sm text-red-600 hover:underline">
-        Delete
-      </button>
-    </form>
+      message="Delete this case? This cannot be undone."
+    />
   );
 }

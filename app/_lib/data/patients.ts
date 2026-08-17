@@ -4,6 +4,7 @@ import type {
   TablesInsert,
   TablesUpdate,
 } from "@/app/_lib/types/database.types";
+import { PAGE_SIZE } from "@/app/_lib/constants";
 
 export async function createPatient(
   supabase: SupabaseClient,
@@ -47,8 +48,6 @@ export async function deletePatient(supabase: SupabaseClient, id: string) {
   const { error } = await supabase.from("patients").delete().eq("id", id);
   if (error) throw error;
 }
-
-const PAGE_SIZE = 20;
 
 export async function getPatients(
   supabase: SupabaseClient,

@@ -5,6 +5,7 @@ import type {
   TablesUpdate,
 } from "@/app/_lib/types/database.types";
 import type { SamplerBoardCase, ChemistBoardCase } from "@/app/_lib/types/domain";
+import { PAGE_SIZE } from "@/app/_lib/constants";
 
 export async function createCase(
   supabase: SupabaseClient,
@@ -97,8 +98,6 @@ export async function getChemistBoardCases(supabase: SupabaseClient) {
   if (error) throw error;
   return data as unknown as ChemistBoardCase[];
 }
-
-const PAGE_SIZE = 20;
 
 export async function getCases(
   supabase: SupabaseClient,

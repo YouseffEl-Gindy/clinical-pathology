@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getMyRole } from "@/app/_lib/data/profiles";
 import { logout } from "@/app/_lib/actions/auth";
+import { Button } from "@/app/_components/ui/Button";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -23,27 +25,22 @@ export default async function Home() {
         )}
         {role === "pathologist" && (
           <div className="flex gap-3">
-            <a
+            <Link
               href="/pathologist/catalog"
               className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
             >
               Test Catalog
-            </a>
-            <a
+            </Link>
+            <Link
               href="/pathologist/staff"
               className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
             >
               Staff
-            </a>
+            </Link>
           </div>
         )}
         <form action={logout}>
-          <button
-            type="submit"
-            className="rounded bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800"
-          >
-            Sign out
-          </button>
+          <Button>Sign out</Button>
         </form>
       </main>
     </div>

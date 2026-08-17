@@ -43,27 +43,42 @@ app/
 ├── pathologist/            # routes under /pathologist/... (dashboard, staff, catalog, approvals)
 ├── login/                  # role-agnostic
 ├── _components/
-│   ├── ui/                 # generic primitives: Button, Input, Table, Modal
-│   ├── shared/              # cross-role domain components, e.g. TestOrderStatusBadge
-│   ├── receptionist/        # role-specific components (includes patient forms/search)
-│   ├── sampler/
-│   ├── chemist/
-│   └── pathologist/         # includes dashboard components
+│   ├── ui/                 # generic primitives, no domain knowledge: Button, Card,
+│   │                       # ErrorBanner, FormField (+ TextField/SelectField/CheckboxField),
+│   │                       # Input (+ Select/Checkbox), Table (+ Row), Pagination,
+│   │                       # ConfirmDeleteForm
+│   ├── shared/              # cross-role domain components: ViewToggle, PhoneSearchForm
+│   ├── receptionist/        # PatientForm, CaseForm, PatientPicker, delete buttons
+│   ├── sampler/             # SamplerCaseCard, CaseStatusBadge, MarkSampledButton
+│   ├── chemist/             # ChemistBoard/ChemistHistory Case+Test views, EnterResultForm
+│   └── pathologist/         # TestForm, DeleteTestButton (+ dashboard components later)
 ├── _lib/
 │   ├── supabase/
 │   │   ├── client.ts        # browser client, anon key
-│   │   └── server.ts        # server components/actions, cookie-based auth
+│   │   ├── server.ts        # server components/actions, cookie-based auth
+│   │   └── admin.ts         # service_role key — server-only, never imported by a client component
 │   ├── data/                 # plain functions wrapping Supabase queries, e.g. patients.ts, cases.ts,
 │   │                         # test-orders.ts — no "use server", no form/React knowledge, reusable anywhere
 │   ├── actions/               # "use server" wrappers, one file per domain, colocated with data/ —
-│   │                         # do auth/role checks, call data/ functions, revalidatePath/redirect.
-│   │                         # service_role-key code (add-staff) lives here, never in the browser.
+│   │   │                     # do auth/role checks, call data/ functions, revalidatePath/redirect.
+│   │   │                     # service_role-key code (add-staff) lives here, never in the browser.
+│   │   └── guards.ts         # requireRole() + redirectWithError() — the preamble every action shares
+│   ├── auth/
+│   │   └── requireRoleOrRedirect.ts  # section role-gate used by each <role>/layout.tsx
 │   ├── types/
-│   │   ├── database.types.ts # Supabase-generated
-│   │   └── domain.ts         # hand-written app types
-│   └── helpers.ts            # one-off pure helpers (formatting, calc)
+│   │   ├── database.types.ts # Supabase-generated — never hand-edit
+│   │   └── domain.ts         # hand-written app types + types derived from data/ return shapes
+│   ├── constants.ts          # PAGE_SIZE, SAMPLED_CASE_VISIBLE_MS, VALID_ROLES + the role groups
+│   └── helpers.ts            # pure helpers: search-param parsing, buildPageHref, yesNo,
+│                             # pgErrorMessage, the parse*Form functions
 └── _styles/globals.css
 ```
+
+**One job per file.** A `page.tsx` parses its params, fetches, and composes components —
+it does not *define* them. If a page grows a second component, a type, or a helper inside
+it, that belongs in `_components/`, `_lib/types/domain.ts`, or `_lib/helpers.ts`
+respectively. Likewise, a `new` and an `edit` page share one form component rather than
+each keeping a copy.
 
 **Placement rule of thumb:**
 | Kind of code | Goes in |
@@ -76,8 +91,13 @@ app/
 | Component used by 2+ roles | `_components/shared/` |
 | Raw Supabase query/mutation | `_lib/data/<entity>.ts` |
 | Form/button handler, revalidation, service_role usage | `_lib/actions/<entity>.ts` |
-| Supabase client setup | `_lib/supabase/client.ts` or `server.ts` |
+| Role check inside a server action | `requireRole()` from `_lib/actions/guards.ts` |
+| Role check for a whole route section | `requireRoleOrRedirect()` in `app/<role>/layout.tsx` |
+| Supabase client setup | `_lib/supabase/client.ts`, `server.ts`, or `admin.ts` |
 | TS types (domain or generated) | `_lib/types/` |
+| A magic number or a fixed list of values | `_lib/constants.ts` |
+| Pure formatting/parsing used by 2+ places | `_lib/helpers.ts` |
+| A form shared by a `new` and an `edit` page | `_components/<role>/<Entity>Form.tsx` |
 
 If a piece of new code doesn't clearly fit one of these, ask rather than guess.
 

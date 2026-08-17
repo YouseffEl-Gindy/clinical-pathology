@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { TablesInsert } from "@/app/_lib/types/database.types";
+import { PAGE_SIZE } from "@/app/_lib/constants";
 
 export async function createTestOrders(
   supabase: SupabaseClient,
@@ -62,8 +63,6 @@ export async function markTestOrderSampled(
   if (error) throw error;
 }
 
-const CHEMIST_PAGE_SIZE = 20;
-
 export async function getChemistBoardTestOrdersPaginated(
   supabase: SupabaseClient,
   { testIds, page = 1 }: { testIds?: string[]; page?: number } = {},
@@ -81,11 +80,11 @@ export async function getChemistBoardTestOrdersPaginated(
     query = query.in("test_id", testIds);
   }
 
-  const from = (page - 1) * CHEMIST_PAGE_SIZE;
-  const { data, error, count } = await query.range(from, from + CHEMIST_PAGE_SIZE - 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const { data, error, count } = await query.range(from, from + PAGE_SIZE - 1);
   if (error) throw error;
 
-  return { orders: data, count: count ?? 0, pageSize: CHEMIST_PAGE_SIZE };
+  return { orders: data, count: count ?? 0, pageSize: PAGE_SIZE };
 }
 
 export async function getChemistHistoryTestOrders(supabase: SupabaseClient) {

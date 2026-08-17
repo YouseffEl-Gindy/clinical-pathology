@@ -2,67 +2,48 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/app/_lib/supabase/server";
-import { getMyRole, getMyProfile } from "@/app/_lib/data/profiles";
+import { getMyProfile } from "@/app/_lib/data/profiles";
 import {
   createPatient,
   updatePatient,
   deletePatient,
 } from "@/app/_lib/data/patients";
+import { redirectWithError, requireRole } from "@/app/_lib/actions/guards";
+import {
+  PATIENT_REQUIRED_ERROR,
+  isCompletePatientForm,
+  parsePatientForm,
+  pgErrorMessage,
+} from "@/app/_lib/helpers";
+import { RECEPTION_ROLES } from "@/app/_lib/constants";
+
+const DUPLICATE_PHONE = "A patient with this phone number already exists.";
 
 export async function addPatient(formData: FormData) {
-  const supabase = await createClient();
-  const role = await getMyRole(supabase);
+  const supabase = await requireRole(
+    RECEPTION_ROLES,
+    "/receptionist/patients/new"
+  );
 
-  if (role !== "receptionist" && role !== "pathologist") {
-    redirect("/receptionist/patients/new?error=Not authorized");
+  const fields = parsePatientForm(formData);
+  if (!isCompletePatientForm(fields)) {
+    redirectWithError("/receptionist/patients/new", PATIENT_REQUIRED_ERROR);
   }
-
-  const first_name = (formData.get("first_name") as string)?.trim();
-  const last_name = (formData.get("last_name") as string)?.trim();
-  const dob = (formData.get("dob") as string)?.trim();
-  const phone = (formData.get("phone") as string)?.trim();
-  const gender = (formData.get("gender") as string)?.trim();
-
-  if (!first_name || !last_name || !dob || !phone || !gender) {
-    redirect(
-      "/receptionist/patients/new?error=" +
-        encodeURIComponent(
-          "First name, last name, date of birth, phone, and gender are required"
-        )
-    );
-  }
-
-  const residence = (formData.get("residence") as string)?.trim() || null;
-  const marital_status =
-    (formData.get("marital_status") as string)?.trim() || null;
-  const email = (formData.get("email") as string)?.trim() || null;
-  const referral_source =
-    (formData.get("referral_source") as string)?.trim() || null;
 
   let patient;
   try {
     const profile = await getMyProfile(supabase);
-
     patient = await createPatient(supabase, {
-      first_name,
-      last_name,
-      dob,
-      phone,
-      gender,
-      residence,
-      marital_status,
-      email,
-      referral_source,
+      ...fields,
       created_by: profile.id,
     });
   } catch (err) {
-    const pgError = err as { code?: string; message?: string };
-    const message =
-      pgError.code === "23505"
-        ? "A patient with this phone number already exists."
-        : pgError.message ?? "Failed to register patient";
-    redirect("/receptionist/patients/new?error=" + encodeURIComponent(message));
+    redirectWithError(
+      "/receptionist/patients/new",
+      pgErrorMessage(err, "Failed to register patient", {
+        "23505": DUPLICATE_PHONE,
+      })
+    );
   }
 
   revalidatePath("/receptionist/patients/new");
@@ -70,56 +51,24 @@ export async function addPatient(formData: FormData) {
 }
 
 export async function editPatient(formData: FormData) {
-  const supabase = await createClient();
-  const role = await getMyRole(supabase);
-
   const id = formData.get("id") as string;
+  const returnPath = `/receptionist/patients/${id}/edit`;
+  const supabase = await requireRole(RECEPTION_ROLES, returnPath);
 
-  if (role !== "receptionist" && role !== "pathologist") {
-    redirect(`/receptionist/patients/${id}/edit?error=Not authorized`);
+  const fields = parsePatientForm(formData);
+  if (!isCompletePatientForm(fields)) {
+    redirectWithError(returnPath, PATIENT_REQUIRED_ERROR);
   }
-
-  const first_name = (formData.get("first_name") as string)?.trim();
-  const last_name = (formData.get("last_name") as string)?.trim();
-  const dob = (formData.get("dob") as string)?.trim();
-  const phone = (formData.get("phone") as string)?.trim();
-  const gender = (formData.get("gender") as string)?.trim();
-
-  if (!first_name || !last_name || !dob || !phone || !gender) {
-    redirect(
-      `/receptionist/patients/${id}/edit?error=` +
-        encodeURIComponent(
-          "First name, last name, date of birth, phone, and gender are required"
-        )
-    );
-  }
-
-  const residence = (formData.get("residence") as string)?.trim() || null;
-  const marital_status =
-    (formData.get("marital_status") as string)?.trim() || null;
-  const email = (formData.get("email") as string)?.trim() || null;
-  const referral_source =
-    (formData.get("referral_source") as string)?.trim() || null;
 
   try {
-    await updatePatient(supabase, id, {
-      first_name,
-      last_name,
-      dob,
-      phone,
-      gender,
-      residence,
-      marital_status,
-      email,
-      referral_source,
-    });
+    await updatePatient(supabase, id, fields);
   } catch (err) {
-    const pgError = err as { code?: string; message?: string };
-    const message =
-      pgError.code === "23505"
-        ? "A patient with this phone number already exists."
-        : pgError.message ?? "Failed to update patient";
-    redirect(`/receptionist/patients/${id}/edit?error=` + encodeURIComponent(message));
+    redirectWithError(
+      returnPath,
+      pgErrorMessage(err, "Failed to update patient", {
+        "23505": DUPLICATE_PHONE,
+      })
+    );
   }
 
   revalidatePath("/receptionist/patients");
@@ -127,24 +76,19 @@ export async function editPatient(formData: FormData) {
 }
 
 export async function deletePatientAction(formData: FormData) {
-  const supabase = await createClient();
-  const role = await getMyRole(supabase);
+  const supabase = await requireRole(RECEPTION_ROLES, "/receptionist/patients");
 
   const id = formData.get("id") as string;
-
-  if (role !== "receptionist" && role !== "pathologist") {
-    redirect("/receptionist/patients?error=Not authorized");
-  }
 
   try {
     await deletePatient(supabase, id);
   } catch (err) {
-    const pgError = err as { code?: string; message?: string };
-    const message =
-      pgError.code === "23503"
-        ? "This patient has existing cases and can't be deleted."
-        : pgError.message ?? "Failed to delete patient";
-    redirect("/receptionist/patients?error=" + encodeURIComponent(message));
+    redirectWithError(
+      "/receptionist/patients",
+      pgErrorMessage(err, "Failed to delete patient", {
+        "23503": "This patient has existing cases and can't be deleted.",
+      })
+    );
   }
 
   revalidatePath("/receptionist/patients");
