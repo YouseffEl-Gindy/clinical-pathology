@@ -3,6 +3,7 @@ import { createClient } from "@/app/_lib/supabase/server";
 import { getPatientById } from "@/app/_lib/data/patients";
 import { getCasesForPatient } from "@/app/_lib/data/cases";
 import { DeletePatientButton } from "@/app/_components/receptionist/DeletePatientButton";
+import { CARD_CLASS } from "@/app/_components/ui/Card";
 
 export default async function PatientDetailPage({
   params,
@@ -29,7 +30,7 @@ export default async function PatientDetailPage({
         </div>
       </div>
 
-      <dl className="grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-6 shadow-sm text-sm">
+      <dl className={`grid grid-cols-2 gap-4 text-sm ${CARD_CLASS}`}>
         <div>
           <dt className="text-gray-500">Date of birth</dt>
           <dd>{patient.dob}</dd>

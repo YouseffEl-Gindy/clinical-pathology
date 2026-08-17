@@ -4,10 +4,10 @@ import { getCaseById } from "@/app/_lib/data/cases";
 import { getPatientById } from "@/app/_lib/data/patients";
 import { getTestOrdersForCase } from "@/app/_lib/data/test-orders";
 import { DeleteCaseButton } from "@/app/_components/receptionist/DeleteCaseButton";
-
-function yesNo(value: boolean | null) {
-  return value ? "Yes" : "No";
-}
+import { CARD_CLASS } from "@/app/_components/ui/Card";
+import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
+import { Row, Table } from "@/app/_components/ui/Table";
+import { yesNo } from "@/app/_lib/helpers";
 
 export default async function CaseDetailPage({
   params,
@@ -46,13 +46,9 @@ export default async function CaseDetailPage({
         )}
       </div>
 
-      {error && (
-        <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
-      )}
+      <ErrorBanner message={error} />
 
-      <dl className="grid grid-cols-2 gap-4 rounded-lg border border-gray-200 p-6 shadow-sm text-sm">
+      <dl className={`grid grid-cols-2 gap-4 text-sm ${CARD_CLASS}`}>
         <div>
           <dt className="text-gray-500">Where do you come from</dt>
           <dd>{caseRecord.came_from ?? "—"}</dd>
@@ -109,33 +105,20 @@ export default async function CaseDetailPage({
 
       <div className="space-y-2">
         <h2 className="text-sm font-medium">Ordered tests</h2>
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-gray-200 text-left text-gray-500">
-              <th className="py-2">Test</th>
-              <th>Code</th>
-              <th>Price</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {testOrders.map((order) => (
-              <tr key={order.id} className="border-b border-gray-100">
-                <td className="py-2">{order.test_catalog?.name ?? "—"}</td>
-                <td>{order.test_catalog?.code ?? "—"}</td>
-                <td>{order.price_snapshot ?? "—"}</td>
-                <td>{order.status}</td>
-              </tr>
-            ))}
-            {testOrders.length === 0 && (
-              <tr>
-                <td colSpan={4} className="py-4 text-center text-gray-500">
-                  No tests ordered.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <Table
+          headers={["Test", "Code", "Price", "Status"]}
+          isEmpty={testOrders.length === 0}
+          emptyMessage="No tests ordered."
+        >
+          {testOrders.map((order) => (
+            <Row key={order.id}>
+              <td className="py-2">{order.test_catalog?.name ?? "—"}</td>
+              <td>{order.test_catalog?.code ?? "—"}</td>
+              <td>{order.price_snapshot ?? "—"}</td>
+              <td>{order.status}</td>
+            </Row>
+          ))}
+        </Table>
       </div>
     </div>
   );

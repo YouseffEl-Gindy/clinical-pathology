@@ -1,4 +1,8 @@
 import { login } from "@/app/_lib/actions/auth";
+import { Button } from "@/app/_components/ui/Button";
+import { CARD_CLASS } from "@/app/_components/ui/Card";
+import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
+import { TextField } from "@/app/_components/ui/FormField";
 
 export default async function LoginPage({
   searchParams,
@@ -9,48 +13,16 @@ export default async function LoginPage({
     <div className="flex flex-1 items-center justify-center p-4">
       <form
         action={login}
-        className="w-full max-w-sm space-y-4 rounded-lg border border-gray-200 p-6 shadow-sm"
+        className={`w-full max-w-sm space-y-4 ${CARD_CLASS}`}
       >
         <h1 className="text-xl font-semibold">Log in</h1>
 
-        {error && (
-          <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
+        <ErrorBanner message={error} />
 
-        <div className="space-y-1">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
+        <TextField label="Email" name="email" type="email" required />
+        <TextField label="Password" name="password" type="password" required />
 
-        <div className="space-y-1">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full rounded bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800"
-        >
-          Log in
-        </button>
+        <Button className="w-full">Log in</Button>
       </form>
     </div>
   );
