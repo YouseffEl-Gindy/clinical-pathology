@@ -34,8 +34,12 @@ export default async function NewCasePage({
     );
   }
 
-  const patient = await getPatientById(supabase, patientId);
-  const tests = await getTestCatalog(supabase, { activeOnly: true });
+  // Independent of each other — fetched together so the two round trips
+  // overlap instead of queueing.
+  const [patient, tests] = await Promise.all([
+    getPatientById(supabase, patientId),
+    getTestCatalog(supabase, { activeOnly: true }),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">

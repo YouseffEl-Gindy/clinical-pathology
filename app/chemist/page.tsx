@@ -17,6 +17,28 @@ export default async function ChemistPage({
 
   const supabase = await createClient();
 
+  // Resolved before the JSX rather than inside it: awaiting in two separate
+  // props made the catalog and the page of orders queue up one after the other,
+  // even though neither depends on the other. Only the active view is fetched.
+  let board: React.ReactNode;
+
+  if (view === "case") {
+    board = <ChemistBoardCaseView cases={await getChemistBoardCases(supabase)} />;
+  } else {
+    const [testCatalog, orders] = await Promise.all([
+      getTestCatalog(supabase),
+      getChemistBoardTestOrdersPaginated(supabase, { testIds, page }),
+    ]);
+    board = (
+      <ChemistBoardTestView
+        testIds={testIds}
+        page={page}
+        testCatalog={testCatalog}
+        {...orders}
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
       <div className="flex items-center justify-between">
@@ -24,19 +46,7 @@ export default async function ChemistPage({
         <ViewToggle basePath="/chemist" active={view} />
       </div>
 
-      {view === "case" ? (
-        <ChemistBoardCaseView cases={await getChemistBoardCases(supabase)} />
-      ) : (
-        <ChemistBoardTestView
-          testIds={testIds}
-          page={page}
-          testCatalog={await getTestCatalog(supabase)}
-          {...(await getChemistBoardTestOrdersPaginated(supabase, {
-            testIds,
-            page,
-          }))}
-        />
-      )}
+      {board}
     </div>
   );
 }

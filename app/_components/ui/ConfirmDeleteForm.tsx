@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 
 /**
  * A "Delete" button that asks for confirmation before submitting.
@@ -29,7 +29,7 @@ export function ConfirmDeleteForm({
       }}
     >
       <input type="hidden" name="id" value={id} />
-      <Button variant="danger">{label}</Button>
+      <SubmitButton variant="danger">{label}</SubmitButton>
     </form>
   );
 }

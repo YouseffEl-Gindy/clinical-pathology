@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 import { CARD_CLASS } from "@/app/_components/ui/Card";
 import {
   CheckboxField,
@@ -151,9 +151,9 @@ export function CaseForm({
         </div>
       </div>
 
-      <Button className="col-span-2">
+      <SubmitButton className="col-span-2">
         {isEdit ? "Save changes" : "Create case"}
-      </Button>
+      </SubmitButton>
 
       {isEdit && (
         <Link

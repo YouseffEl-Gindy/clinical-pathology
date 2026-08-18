@@ -1,5 +1,5 @@
 import { sampleTestOrder } from "@/app/_lib/actions/test-orders";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 
 /** Advances one test order `ordered` → `sampled`, or shows that it's done. */
 export function MarkSampledButton({
@@ -20,7 +20,7 @@ export function MarkSampledButton({
   return (
     <form action={sampleTestOrder}>
       <input type="hidden" name="id" value={id} />
-      <Button size="sm">Mark sampled</Button>
+      <SubmitButton size="sm">Mark sampled</SubmitButton>
     </form>
   );
 }

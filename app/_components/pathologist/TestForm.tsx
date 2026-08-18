@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 import { CARD_CLASS } from "@/app/_components/ui/Card";
 import { TextField } from "@/app/_components/ui/FormField";
 import { Checkbox } from "@/app/_components/ui/Input";
@@ -69,9 +69,9 @@ export function TestForm({
         </div>
       )}
 
-      <Button className="col-span-2">
+      <SubmitButton className="col-span-2">
         {isEdit ? "Save changes" : "Add test"}
-      </Button>
+      </SubmitButton>
 
       {isEdit && (
         <Link
