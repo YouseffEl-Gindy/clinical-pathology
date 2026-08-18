@@ -5,6 +5,7 @@ import { getTestCatalog } from "@/app/_lib/data/test-catalog";
 import { addCase } from "@/app/_lib/actions/cases";
 import { CaseForm } from "@/app/_components/receptionist/CaseForm";
 import { PatientPicker } from "@/app/_components/receptionist/PatientPicker";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
 import { firstParam } from "@/app/_lib/helpers";
 
@@ -27,6 +28,7 @@ export default async function NewCasePage({
 
     return (
       <div className="mx-auto max-w-4xl space-y-8 p-6">
+        <BackLink href="/receptionist/cases">All cases</BackLink>
         <h1 className="text-xl font-semibold">New Case — Select Patient</h1>
         <ErrorBanner message={error} />
         <PatientPicker patients={patients} phone={phone} />
@@ -43,6 +45,7 @@ export default async function NewCasePage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
+      <BackLink href="/receptionist/cases">All cases</BackLink>
       <h1 className="text-xl font-semibold">New Case</h1>
 
       <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm">

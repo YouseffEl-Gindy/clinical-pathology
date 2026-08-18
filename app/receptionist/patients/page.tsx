@@ -3,7 +3,9 @@ import { createClient } from "@/app/_lib/supabase/server";
 import { getPatients } from "@/app/_lib/data/patients";
 import { DeletePatientButton } from "@/app/_components/receptionist/DeletePatientButton";
 import { PhoneSearchForm } from "@/app/_components/shared/PhoneSearchForm";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
+import { LinkButton } from "@/app/_components/ui/LinkButton";
 import { Pagination } from "@/app/_components/ui/Pagination";
 import { Row, Table } from "@/app/_components/ui/Table";
 import { firstParam, parsePageParam } from "@/app/_lib/helpers";
@@ -23,14 +25,13 @@ export default async function PatientsSearchPage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
+      <BackLink href="/">Home</BackLink>
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Patients</h1>
-        <Link
-          href="/receptionist/patients/new"
-          className="rounded bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800"
-        >
+        <LinkButton href="/receptionist/patients/new">
           + Register new patient
-        </Link>
+        </LinkButton>
       </div>
 
       <ErrorBanner message={error} />

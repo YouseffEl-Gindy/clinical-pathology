@@ -5,6 +5,7 @@ import { getChemistBoardCases } from "@/app/_lib/data/cases";
 import { ChemistBoardCaseView } from "@/app/_components/chemist/ChemistBoardCaseView";
 import { ChemistBoardTestView } from "@/app/_components/chemist/ChemistBoardTestView";
 import { ViewToggle } from "@/app/_components/shared/ViewToggle";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { firstParam, paramList, parsePageParam } from "@/app/_lib/helpers";
 
 export default async function ChemistPage({
@@ -41,6 +42,8 @@ export default async function ChemistPage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
+      <BackLink href="/">Home</BackLink>
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tests waiting to be processed</h1>
         <ViewToggle basePath="/chemist" active={view} />

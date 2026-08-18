@@ -3,6 +3,7 @@ import { createClient } from "@/app/_lib/supabase/server";
 import { getPatientById } from "@/app/_lib/data/patients";
 import { getCasesForPatient } from "@/app/_lib/data/cases";
 import { DeletePatientButton } from "@/app/_components/receptionist/DeletePatientButton";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { CARD_CLASS } from "@/app/_components/ui/Card";
 
 export default async function PatientDetailPage({
@@ -18,6 +19,8 @@ export default async function PatientDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">
+      <BackLink href="/receptionist/patients">All patients</BackLink>
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">
           {patient.first_name} {patient.last_name}
