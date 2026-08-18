@@ -36,17 +36,20 @@ shows in the URL and two roles can never accidentally collide on the same path:
 
 ```
 app/
+├── loading.tsx             # covers / and /login — the routes outside a role folder
 ├── receptionist/           # routes under /receptionist/...
-│   └── layout.tsx          # role-gate: redirect if profile.role !== "receptionist" | "pathologist"
+│   ├── layout.tsx          # role-gate: redirect if profile.role !== "receptionist" | "pathologist"
+│   └── loading.tsx         # one boundary covers the whole subtree, nested routes included
 ├── sampler/                # routes under /sampler/...
 ├── chemist/                # routes under /chemist/...
 ├── pathologist/            # routes under /pathologist/... (dashboard, staff, catalog, approvals)
+│                           # ^ all three carry the same layout.tsx + loading.tsx pair
 ├── login/                  # role-agnostic
 ├── _components/
 │   ├── ui/                 # generic primitives, no domain knowledge: Button, Card,
 │   │                       # ErrorBanner, FormField (+ TextField/SelectField/CheckboxField),
 │   │                       # Input (+ Select/Checkbox), Table (+ Row), Pagination,
-│   │                       # ConfirmDeleteForm
+│   │                       # ConfirmDeleteForm, LoadingState, SubmitButton
 │   ├── shared/              # cross-role domain components: ViewToggle, PhoneSearchForm
 │   ├── receptionist/        # PatientForm, CaseForm, PatientPicker, delete buttons
 │   ├── sampler/             # SamplerCaseCard, CaseStatusBadge, MarkSampledButton
@@ -80,11 +83,29 @@ it, that belongs in `_components/`, `_lib/types/domain.ts`, or `_lib/helpers.ts`
 respectively. Likewise, a `new` and an `edit` page share one form component rather than
 each keeping a copy.
 
+**Never leave the user staring at nothing.** Every interaction here is a server round
+trip, and the two feedback mechanisms are not interchangeable:
+- **Navigation** (a link, a redirect, a GET form) → the nearest `loading.tsx`. A page with
+  no boundary above it leaves the *previous* page frozen on screen until the whole render
+  finishes, so a stall and a fast response look identical.
+- **A server action that stays put** (`revalidatePath`, no `redirect`) → `SubmitButton`.
+  `loading.tsx` never fires for these, so the button is the only signal. It also blocks
+  the double submit.
+- A plain GET form (`<form>` with no `action`) submits natively, which `useFormStatus`
+  cannot track — leave those on `Button` and let `loading.tsx` cover them.
+
+**Fetch independent things together.** Sequential `await`s in a page are sequential
+network round trips. If two queries don't feed each other, `Promise.all` them; if one
+needs the other's id, only that one waits. Fetch *after* an early return, not before, so
+a bailed-out branch doesn't pay for data it discards.
+
 **Placement rule of thumb:**
 | Kind of code | Goes in |
 |---|---|
 | Page/route UI for a specific role | `app/<role>/<feature>/page.tsx` |
 | Layout/role-gate for a role's section | `app/<role>/layout.tsx` |
+| Loading fallback for a role's section | `app/<role>/loading.tsx` (renders `LoadingState`) |
+| Submit button on a server-action form | `SubmitButton` from `_components/ui/` |
 | Login/role-agnostic page | top-level `app/` (no role folder) |
 | Generic UI primitive | `_components/ui/` |
 | Component used by one role only | `_components/<role>/` |
@@ -506,3 +527,28 @@ Would apply to: `getSamplerBoardTestOrders`, `getChemistBoardTestOrders`,
 `app/chemist/history/page.tsx` (would simplify — no more manual `Map`-based grouping there).
 The "by test" view would keep the current flat-list-from-`test_orders` approach, since
 `test_catalog` would need its own separate root query anyway.
+
+### Dev-only: navigation freezes on "Rendering…" — Next.js bug, not app code
+
+Occasionally in `npm run dev`, a click freezes with the dev-overlay "Rendering…" pill lit
+forever. **The mutation already succeeded** — the terminal shows a healthy `200 in 423ms`
+— but the browser never displays the new page. Do not go looking for this in app code;
+investigated 2026-08-18 and it is upstream.
+
+Cause: React 19.2's `createFromReadableStream` waits for **two** streams — the RSC payload
+and a `debugChannel` fed over the HMR websocket. When that socket dies the debug stream
+never closes, `streamDoneCount` stays at 1 of 2, and the router never commits. The socket
+reconnects roughly once a second forever and cannot self-heal, because a successful open
+resets the failure counter, so Next's built-in "reload after N failures" rescue never
+fires. See [vercel/next.js#91770](https://github.com/vercel/next.js/discussions/91770).
+
+- **Workaround: `Ctrl+Shift+R`.** A new document id mints a healthy socket. Restarting the
+  dev server does *not* help — it was never the problem.
+- Regression landed in Next 16.2.0; 16.1.7 is unaffected; still unfixed as of 16.3.1
+  (project is on 16.3.0). The real fix has to happen upstream in
+  `react-server-dom-turbopack`, which needs to treat the debug channel as best-effort.
+- **Cannot affect production** — no HMR websocket exists outside dev.
+- Ruled out: browser extensions, `proxy.ts` touching the socket (Next handles `/_next/hmr`
+  in its upgrade handler *before* middleware runs), duplicate/restarting dev servers, and
+  Supabase latency. Still unexplained: why the socket drops on plain `localhost`, where the
+  handshake succeeds — every reported case elsewhere involves a non-localhost address.
