@@ -10,8 +10,11 @@ export default async function PatientDetailPage({
 }: PageProps<"/receptionist/patients/[id]">) {
   const { id } = await params;
   const supabase = await createClient();
-  const patient = await getPatientById(supabase, id);
-  const cases = await getCasesForPatient(supabase, id);
+  // Both key off the same patient id — fetched together rather than in series.
+  const [patient, cases] = await Promise.all([
+    getPatientById(supabase, id),
+    getCasesForPatient(supabase, id),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">

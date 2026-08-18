@@ -7,6 +7,8 @@ type ButtonProps = React.ComponentProps<"button"> & {
 
 const PRIMARY = "rounded bg-gray-900 text-sm font-medium text-white hover:bg-gray-800";
 const DANGER = "text-sm text-red-600 hover:underline";
+/** Shared by both variants so a disabled button reads as inert, not just unclickable. */
+const DISABLED = "disabled:cursor-not-allowed disabled:opacity-60";
 
 export function Button({
   size = "md",
@@ -15,10 +17,11 @@ export function Button({
   type = "submit",
   ...props
 }: ButtonProps) {
-  const base =
+  const variantClass =
     variant === "danger"
       ? DANGER
       : `${PRIMARY} ${size === "sm" ? "px-3 py-1" : "px-3 py-2"}`;
+  const base = `${variantClass} ${DISABLED}`;
 
   return (
     <button

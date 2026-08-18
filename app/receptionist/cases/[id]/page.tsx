@@ -16,9 +16,13 @@ export default async function CaseDetailPage({
   const { id } = await params;
   const { error } = await searchParams;
   const supabase = await createClient();
-  const caseRecord = await getCaseById(supabase, id);
+  // Both of these key off the case id we already have, so they go out together.
+  // The patient has to wait — its id only arrives with the case.
+  const [caseRecord, testOrders] = await Promise.all([
+    getCaseById(supabase, id),
+    getTestOrdersForCase(supabase, id),
+  ]);
   const patient = await getPatientById(supabase, caseRecord.patient_id);
-  const testOrders = await getTestOrdersForCase(supabase, id);
   const isEditable = testOrders.every((order) => order.status === "ordered");
 
   return (

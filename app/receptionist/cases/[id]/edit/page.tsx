@@ -16,9 +16,12 @@ export default async function EditCasePage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const caseRecord = await getCaseById(supabase, id);
-  const patient = await getPatientById(supabase, caseRecord.patient_id);
-  const currentOrders = await getTestOrdersForCase(supabase, id);
+  // Only these two are needed to decide whether the case is still editable, so
+  // they go out together and nothing else is fetched until that's known.
+  const [caseRecord, currentOrders] = await Promise.all([
+    getCaseById(supabase, id),
+    getTestOrdersForCase(supabase, id),
+  ]);
   const isEditable = currentOrders.every((order) => order.status === "ordered");
 
   if (!isEditable) {
@@ -38,7 +41,11 @@ export default async function EditCasePage({
     );
   }
 
-  const tests = await getTestCatalog(supabase, { activeOnly: true });
+  // Both only feed the form below, so a locked case never pays for them.
+  const [patient, tests] = await Promise.all([
+    getPatientById(supabase, caseRecord.patient_id),
+    getTestCatalog(supabase, { activeOnly: true }),
+  ]);
   const currentTestIds = currentOrders.map((order) => order.test_id);
 
   return (

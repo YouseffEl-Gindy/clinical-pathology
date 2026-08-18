@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getMyRole } from "@/app/_lib/data/profiles";
 import { logout } from "@/app/_lib/actions/auth";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -40,7 +40,7 @@ export default async function Home() {
           </div>
         )}
         <form action={logout}>
-          <Button>Sign out</Button>
+          <SubmitButton>Sign out</SubmitButton>
         </form>
       </main>
     </div>

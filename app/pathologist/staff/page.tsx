@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/app/_lib/supabase/admin";
 import { getStaff } from "@/app/_lib/data/staff";
 import { addStaff } from "@/app/_lib/actions/staff";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 import { CARD_CLASS } from "@/app/_components/ui/Card";
 import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
 import { SelectField, TextField } from "@/app/_components/ui/FormField";
@@ -55,7 +55,7 @@ export default async function StaffPage({
           <option value="pathologist">Pathologist</option>
         </SelectField>
 
-        <Button className="col-span-2">Add staff</Button>
+        <SubmitButton className="col-span-2">Add staff</SubmitButton>
       </form>
 
       <Table

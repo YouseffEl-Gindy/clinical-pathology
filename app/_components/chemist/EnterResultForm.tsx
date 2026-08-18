@@ -1,5 +1,5 @@
 import { enterTestResult } from "@/app/_lib/actions/test-orders";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 
 /** Inline result entry for one test order: a number, its unit, and Save. */
 export function EnterResultForm({
@@ -23,7 +23,7 @@ export function EnterResultForm({
         className="w-24 rounded border border-gray-300 px-2 py-1 text-sm"
       />
       {unit && <span className="text-sm text-gray-500">{unit}</span>}
-      <Button size="sm">Save result</Button>
+      <SubmitButton size="sm">Save result</SubmitButton>
     </form>
   );
 }

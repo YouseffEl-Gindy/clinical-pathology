@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/app/_components/ui/Button";
+import { SubmitButton } from "@/app/_components/ui/SubmitButton";
 import { CARD_CLASS } from "@/app/_components/ui/Card";
 import { SelectField, TextField } from "@/app/_components/ui/FormField";
 import type { Tables } from "@/app/_lib/types/database.types";
@@ -94,9 +94,9 @@ export function PatientForm({
         defaultValue={patient?.referral_source ?? ""}
       />
 
-      <Button className="col-span-2">
+      <SubmitButton className="col-span-2">
         {isEdit ? "Save changes" : "Register patient"}
-      </Button>
+      </SubmitButton>
 
       {isEdit && (
         <Link
