@@ -25,10 +25,11 @@ If both hold, do the following:
 
 4. Review `git status` and stage the relevant files explicitly (avoid `git add -A`/`git add .`; check for anything that looks like a secret or credential before staging).
 
-5. Commit with a message that summarizes the *why*, following this repo's commit message style (see `git log`), ending with:
+5. Commit with a message that summarizes the *why*, following this repo's commit message style (see `git log`), ending with a co-author trailer naming **the model actually running this command** — not a hardcoded one, so the attribution stays truthful as models change:
    ```
-   Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+   Co-Authored-By: Claude <model name> <noreply@anthropic.com>
    ```
+   e.g. `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`, matching the existing trailers in `git log`.
 
 6. Push and set upstream:
    ```
