@@ -1,6 +1,7 @@
 import { createClient } from "@/app/_lib/supabase/server";
 import { getSamplerBoardCases } from "@/app/_lib/data/cases";
 import { SamplerCaseCard } from "@/app/_components/sampler/SamplerCaseCard";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { filterRecentlySampledCases } from "@/app/_lib/helpers";
 
 export default async function SamplerPage() {
@@ -10,6 +11,8 @@ export default async function SamplerPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
+      <BackLink href="/">Home</BackLink>
+
       <h1 className="text-xl font-semibold">Tests waiting to be sampled</h1>
 
       {caseGroups.length === 0 && (

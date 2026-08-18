@@ -4,6 +4,7 @@ import { getCaseById } from "@/app/_lib/data/cases";
 import { getPatientById } from "@/app/_lib/data/patients";
 import { getTestOrdersForCase } from "@/app/_lib/data/test-orders";
 import { DeleteCaseButton } from "@/app/_components/receptionist/DeleteCaseButton";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { CARD_CLASS } from "@/app/_components/ui/Card";
 import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
 import { Row, Table } from "@/app/_components/ui/Table";
@@ -27,6 +28,8 @@ export default async function CaseDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 p-6">
+      <BackLink href="/receptionist/cases">All cases</BackLink>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Case</h1>

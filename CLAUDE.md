@@ -46,8 +46,9 @@ app/
 │                           # ^ all three carry the same layout.tsx + loading.tsx pair
 ├── login/                  # role-agnostic
 ├── _components/
-│   ├── ui/                 # generic primitives, no domain knowledge: Button, Card,
-│   │                       # ErrorBanner, FormField (+ TextField/SelectField/CheckboxField),
+│   ├── ui/                 # generic primitives, no domain knowledge: Button, LinkButton,
+│   │                       # BackLink, Card, ErrorBanner, FormField
+│   │                       # (+ TextField/SelectField/CheckboxField),
 │   │                       # Input (+ Select/Checkbox), Table (+ Row), Pagination,
 │   │                       # ConfirmDeleteForm, LoadingState, SubmitButton
 │   ├── shared/              # cross-role domain components: ViewToggle, PhoneSearchForm
@@ -94,6 +95,16 @@ trip, and the two feedback mechanisms are not interchangeable:
 - A plain GET form (`<form>` with no `action`) submits natively, which `useFormStatus`
   cannot track — leave those on `Button` and let `loading.tsx` cover them.
 
+**Navigation stays inside its own feature.** Cross-feature jumps (Patients ↔ Cases, and
+later the other roles' sections) belong on the **home page only**. Every other page
+navigates within its own hierarchy: a `BackLink` up to its list, a `LinkButton` down to a
+record or to an action on the thing already on screen. A patient page is about that
+patient — it does not offer the global cases list.
+
+Contextual links are not cross-feature jumps and are fine: a case page linking to *its own*
+patient, or a patient page's `+ New case` for *that* patient, shows related data about
+what's on screen rather than offering a feature switch.
+
 **Fetch independent things together.** Sequential `await`s in a page are sequential
 network round trips. If two queries don't feed each other, `Promise.all` them; if one
 needs the other's id, only that one waits. Fetch *after* an early return, not before, so
@@ -106,6 +117,8 @@ a bailed-out branch doesn't pay for data it discards.
 | Layout/role-gate for a role's section | `app/<role>/layout.tsx` |
 | Loading fallback for a role's section | `app/<role>/loading.tsx` (renders `LoadingState`) |
 | Submit button on a server-action form | `SubmitButton` from `_components/ui/` |
+| A link styled as a button (navigation) | `LinkButton` from `_components/ui/` |
+| The "go up one level" link above a heading | `BackLink` from `_components/ui/` |
 | Login/role-agnostic page | top-level `app/` (no role folder) |
 | Generic UI primitive | `_components/ui/` |
 | Component used by one role only | `_components/<role>/` |

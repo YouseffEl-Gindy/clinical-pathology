@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getCaseById } from "@/app/_lib/data/cases";
 import { getPatientById } from "@/app/_lib/data/patients";
@@ -6,6 +5,7 @@ import { getTestCatalog } from "@/app/_lib/data/test-catalog";
 import { getTestOrdersForCase } from "@/app/_lib/data/test-orders";
 import { editCase } from "@/app/_lib/actions/cases";
 import { CaseForm } from "@/app/_components/receptionist/CaseForm";
+import { BackLink } from "@/app/_components/ui/BackLink";
 import { ErrorBanner } from "@/app/_components/ui/ErrorBanner";
 
 export default async function EditCasePage({
@@ -31,12 +31,7 @@ export default async function EditCasePage({
         <p className="text-sm text-gray-600">
           This case can no longer be edited because testing has started.
         </p>
-        <Link
-          href={`/receptionist/cases/${id}`}
-          className="text-sm text-gray-500 hover:underline"
-        >
-          ← Back to case
-        </Link>
+        <BackLink href={`/receptionist/cases/${id}`}>Back to case</BackLink>
       </div>
     );
   }
@@ -50,6 +45,7 @@ export default async function EditCasePage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
+      <BackLink href={`/receptionist/cases/${id}`}>Back to case</BackLink>
       <h1 className="text-xl font-semibold">Edit Case</h1>
 
       <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm">

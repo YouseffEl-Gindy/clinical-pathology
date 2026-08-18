@@ -1,12 +1,24 @@
-import Link from "next/link";
 import { createClient } from "@/app/_lib/supabase/server";
 import { getMyRole } from "@/app/_lib/data/profiles";
 import { logout } from "@/app/_lib/actions/auth";
+import { LinkButton } from "@/app/_components/ui/LinkButton";
 import { SubmitButton } from "@/app/_components/ui/SubmitButton";
+import {
+  ADMIN_ROLES,
+  PROCESSING_ROLES,
+  RECEPTION_ROLES,
+  SAMPLING_ROLES,
+} from "@/app/_lib/constants";
+import type { StaffRole } from "@/app/_lib/constants";
 
 export default async function Home() {
   const supabase = await createClient();
   const role = await getMyRole(supabase);
+
+  // The role groups already encode "pathologist can do everything the other
+  // roles can", so a pathologist sees the reception links too.
+  const can = (allowed: StaffRole[]) =>
+    role !== null && allowed.includes(role as StaffRole);
 
   return (
     <div className="flex flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -23,20 +35,41 @@ export default async function Home() {
             No profile found for this account.
           </p>
         )}
-        {role === "pathologist" && (
+        {can(RECEPTION_ROLES) && (
           <div className="flex gap-3">
-            <Link
-              href="/pathologist/catalog"
-              className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
-            >
+            <LinkButton href="/receptionist/patients" variant="secondary">
+              Patients
+            </LinkButton>
+            <LinkButton href="/receptionist/cases" variant="secondary">
+              Cases
+            </LinkButton>
+          </div>
+        )}
+        {can(SAMPLING_ROLES) && (
+          <div className="flex gap-3">
+            <LinkButton href="/sampler" variant="secondary">
+              Sampling
+            </LinkButton>
+          </div>
+        )}
+        {can(PROCESSING_ROLES) && (
+          <div className="flex gap-3">
+            <LinkButton href="/chemist" variant="secondary">
+              Processing
+            </LinkButton>
+            <LinkButton href="/chemist/history" variant="secondary">
+              Processing history
+            </LinkButton>
+          </div>
+        )}
+        {can(ADMIN_ROLES) && (
+          <div className="flex gap-3">
+            <LinkButton href="/pathologist/catalog" variant="secondary">
               Test Catalog
-            </Link>
-            <Link
-              href="/pathologist/staff"
-              className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50"
-            >
+            </LinkButton>
+            <LinkButton href="/pathologist/staff" variant="secondary">
               Staff
-            </Link>
+            </LinkButton>
           </div>
         )}
         <form action={logout}>
